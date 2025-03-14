@@ -1,0 +1,13 @@
+---
+title: "GithubThing"
+output: html_document
+---
+
+This is taking too long.
+
+```{r}
+
+data <- c(1,2,3,4,5)
+mean(data)
+
+```
