@@ -1,0 +1,309 @@
+---
+title: "Milwaukee Bucks Shot Distribution 2000 - 2024"
+font: 12pt
+date: "Landen Frye"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+    
+```{r install packages, warning=FALSE, message=FALSE, echo=FALSE}   
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo=FALSE)
+
+#once installed, do not need to install again
+# install.packages("ggplot2")
+# install.packages("sportyR")
+# install.packages("dplyr")
+# install.packages("gridExtra)
+
+```
+
+```{r load librarys} 
+
+library(sportyR)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+```
+   
+```{r loading data, warning=FALSE, include=FALSE} 
+
+Sys.setenv("VROOM_CONNECTION_SIZE" = 500000) #Had to do this otherwise would not import dataset
+
+Bucks_Colors <-  c("#999999", "#000000", "#009E73", "#FFFDD0") #General Milwaukee Bucks colors
+
+BucksShots2000 <- nbastatR::teams_shots(teams = "Milwaukee Bucks", seasons = 2000, season_types = "Regular Season") #loading dataset from nbastatR for year 2000
+
+BucksShots2010 <- nbastatR::teams_shots(teams = "Milwaukee Bucks", seasons = 2010, season_types = "Regular Season") 
+
+BucksShots2020 <- nbastatR::teams_shots(teams = "Milwaukee Bucks", seasons = 2020, season_types = "Regular Season") 
+
+BucksShots2024 <- nbastatR::teams_shots(teams = "Milwaukee Bucks", seasons = 2024, season_types = "Regular Season") 
+
+# I did a 10 year intervals because it allows enough progression between each plot to be noticeable. 2024 was the most recent completed season; thus the 4 year gap.
+
+```
+
+```{r transforming data} 
+
+
+#THIS cannot get ran again because it will manipulate the coordinates to be too small. To run this chunk, data needs to be loaded freshly again from nbastatR otherwise the plots will not work.
+#2000
+BucksShots2000$isShotMade <- factor(BucksShots2000$isShotMade, levels = c(TRUE, FALSE))
+#I had chatgpt help me do this, I did this so TRUE (or Make) would show up first in the legend
+
+BucksShots2000$locationX <- BucksShots2000$locationX / 10 
+BucksShots2000$locationY <- BucksShots2000$locationY / 10 
+# I did this to scale it down to the size of the court, nbastatR data is in 1/10 foot while geom_basketball is in feet 
+
+#2010
+BucksShots2010$isShotMade <- factor(BucksShots2010$isShotMade, levels = c(TRUE, FALSE))
+BucksShots2010$locationX <- BucksShots2010$locationX / 10 
+BucksShots2010$locationY <- BucksShots2010$locationY / 10 
+
+#2020
+BucksShots2020$isShotMade <- factor(BucksShots2020$isShotMade, levels = c(TRUE, FALSE))
+BucksShots2020$locationX <- BucksShots2020$locationX / 10 
+BucksShots2020$locationY <- BucksShots2020$locationY / 10 
+
+#2024
+BucksShots2024$isShotMade <- factor(BucksShots2024$isShotMade, levels = c(TRUE, FALSE))
+BucksShots2024$locationX <- BucksShots2024$locationX / 10 
+BucksShots2024$locationY <- BucksShots2024$locationY / 10 
+
+```
+
+```{r building plots} 
+
+court_plot <- geom_basketball("nba", display_range = "defensive_key", rotation = 90, x_trans = 42)
+# court_plot #checking nba plot, dont actually need it
+#I have no idea why 42 was the transformation number, but it worked through trial and error
+#Plot from sportyR package, learned dimensions and whatnot through help tab
+
+
+#2000
+plot00 <- court_plot + 
+  geom_point(data = BucksShots2000, 
+             aes(x = locationX, # X coordinates
+                 y = locationY, # Y coordinates
+                 color = isShotMade,
+                 shape = isShotMade), #To get colors/shapes on data points
+             size = 1.2, #Through trial and error, liked this size the best
+             alpha = .6) +  #Through trial and error, liked this alpha (opacity) the best
+  labs(
+    title = "Milwaukee Bucks Shot Distribution in 2000",
+    color = "Shot Result",
+    shape = "Shot Result") +  #This is the titles of the graph
+  scale_color_manual(values = c("TRUE" = Bucks_Colors[3], "FALSE" = Bucks_Colors[4]), 
+                     labels = c("Make", "Miss")) + #Bucks colors plus names for shot result
+  scale_shape_manual(values = c("TRUE" = 16, "FALSE" = 16), 
+                     labels = c("Make", "Miss")) + #When i add this, it makes legend look better
+  theme_dark() + #I liked the way this theme looked with the two bucks colors on top of it
+  theme(
+    plot.title = element_text(hjust = 0.5), #Center title
+    axis.text.x = element_blank(), #Eliminate numbers on x axis
+    axis.text.y = element_blank(), #Eliminates numbers on y axis
+    legend.position = "bottom") + #Moves legend to the bottom
+  coord_fixed() + #Got this from chatgpt to help the coordinates work
+  ylim(-6,35)  + #Limited the y axis from -6 to 35 to appropriately display the plot
+  ylab("") + #Eliminate y axis title
+  xlab("") + #Eliminate x axis title
+  xlim(-27,27) #an attempt to make the plots a little bigger when knitting
+
+
+
+#2010
+plot10 <- court_plot + 
+  geom_point(data = BucksShots2010, 
+             aes(x = locationX,
+                 y = locationY,
+                 color = isShotMade,
+                 shape = isShotMade),
+             size = 1.2,
+             alpha = .6) +  
+  labs(title = "Milwaukee Bucks Shot Distribution in 2010",
+       color = "Shot Result",
+       shape = "Shot Result") +  
+  scale_color_manual(values = c("TRUE" = Bucks_Colors[3], "FALSE" = Bucks_Colors[4]), 
+                     labels = c("Make", "Miss")) +
+  scale_shape_manual(values = c("TRUE" = 16, "FALSE" = 16), 
+                     labels = c("Make", "Miss")) +
+  theme_dark() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(),  
+    axis.text.y = element_blank(),
+    legend.position = "bottom") + 
+  coord_fixed() + 
+  ylim(-6,35)  +
+  ylab("") + 
+  xlab("") +
+  xlim(-27,27)
+
+
+#2020
+plot20 <- court_plot + 
+  geom_point(data = BucksShots2020, 
+             aes(x = locationX,
+                 y = locationY,
+                 color = isShotMade,
+                 shape = isShotMade),
+             size = 1.2,
+             alpha = .6) +  
+  labs(title = "Milwaukee Bucks Shot Distribution in 2020",
+       color = "Shot Result",
+       shape = "Shot Result") +  
+  scale_color_manual(values = c("TRUE" = Bucks_Colors[3], "FALSE" = Bucks_Colors[4]), 
+                     labels = c("Make", "Miss")) +
+  scale_shape_manual(values = c("TRUE" = 16, "FALSE" = 16), 
+                     labels = c("Make", "Miss")) +
+  theme_dark() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(),  
+    axis.text.y = element_blank(),
+    legend.position = "bottom") +  
+  coord_fixed() + 
+  ylim(-6,35)  +
+  ylab("") + 
+  xlab("") +
+  xlim(-27,27)
+
+
+#2024
+plot24 <- court_plot + 
+  geom_point(data = BucksShots2024, 
+             aes(x = locationX,
+                 y = locationY,
+                 color = isShotMade,
+                 shape = isShotMade),
+             size = 1.2,
+             alpha = .6) +  
+  labs(title = "Milwaukee Bucks Shot Distribution in 2024",
+       color = "Shot Result",
+       shape = "Shot Result") +  
+  scale_color_manual(values = c("TRUE" = Bucks_Colors[3], "FALSE" = Bucks_Colors[4]), 
+                     labels = c("Make", "Miss")) +
+  scale_shape_manual(values = c("TRUE" = 16, "FALSE" = 16), 
+                     labels = c("Make", "Miss")) +
+  theme_dark() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(),  
+    axis.text.y = element_blank(),
+    legend.position = "bottom") + 
+  coord_fixed() + 
+  ylim(-6,35)  +
+  ylab("") + 
+  xlab("") +
+  xlim(-27,27)
+
+```
+
+```{r plot view, warning=FALSE, fig.width=4.5, fig.height=4.5}
+
+plot00   #2000        
+plot10   #2010
+plot20   #2020
+plot24   #2024
+#did this so i could view all 4 plots at once in a separate chunk
+
+```
+
+# Key Takeaways
+
+- The volume of 3-point shots taken in 2010 increased roughly 33% from 2000. This increase from 2020 when compared to 2010 is nearly 90%
+- Between 2010 and 2020, finishing at the basket became noticeably much more efficient and has remained that way since.
+- From 2010 to 2020, there is a noticeable difference in midrange volume. Mid-range shots were essentially taken out of the shot selection.
+- Some differences between 2020 and 2024 are that 3-point distance seems to be getting further from the basket and more midrange shots are being thrown into the shot selection. 
+
+\newpage
+
+## Advanced Findings
+
+- **3pt Volume**: For dozens of years, the NBA was dominated by strong scorers that could get to the rim at ease. Beyond that, some of the best "pure scorers" were people that had an efficient midrange jumper such as Michael Jordan, Tracy Mcgrady, and Kobe Bryant. As basketball evolved, people practiced 3-point shots much more than ever before; thus, starting shooting better in game. This led to the average point per shot attempt when shooting a 3 to become higher than a 2. This statistical analysis brought a mathematical approach to a basketball game. While a team could have a cold night and shoot 15% from beyond the arc, in the long run, a team that shoots more three pointers will score more points. This is backed up by statistics from basketball-reference.com. Therefore, this would explain why NBA team scoring averages had risen by over 3 points per team from 2000-2010, and then roughly 11 more points per team from 2010 to 2020. This was easy to visualize as the density beyond the arc becomes more and more dense the closer you get to modern day.
+  https://www.basketball-reference.com/leagues/NBA_stats_per_game.html
+  
+- **Finishing at the Rim**: For the first two plots, scoring was concentrated around the basket more than other ranges due to the simple fact the ball has to travel less distance to go in the hoop and more fouls are drawn next to the rim. However, in the 2020 plot it becomes noticeablly greener, or a higher likelihood to make the shot. This is due to one of the best rim scorers in the league, Giannis Antetokounmpo. After putting on some muscle, his touch beyond the arc dwindled, but he became one of the most efficient scorers in close proximity to the hoop. Since a majority of his shots occur at the rim (as later shown), he has put up an impressive 55% career shooting percentage, which rivals some all time great bigs such as Shaq, Kareem, and Jokic. Giannis has been dominant since 2016 and still remains with the Milwaukee Bucks; thus, the up tick in efficiency in 2020 and 2024.
+  https://www.basketball-reference.com/leaders/fg_pct_career.html
+
+- **The Dying Art of the Midrange**: As you can see, in plots from the year 2000 and 2010, shots were pretty evenly distributed from all across the court. There was a healthy amount of shots from 3, at the rim, and in the midrange. Due to advanced metrics such as points per shot attempt and evolving NBA archetypes, this shot became less and less common. Between 2010 and 2020, players started getting told not to take these shots because they could either take a couple steps back and potentially get 3 points instead of 2 or could get closer to the basket, where higher efficiency is much more common. Nowadays, there are only a few prolific midrange scorers such as Kevin Durant, Demar Derozan, Devin Booker. 
+
+- **Modern NBA shot profile**: While I cannot provide any statistics on average 3 point shot distance, any person that watches the NBA and can comprehend the graphs above knows that 3 point shots are being shot from further and further away each year. While for the Bucks, this is largely due to Damian Lillard, this is a pattern seen across the league as guards are practicing for deeper and deeper range every year. This range allows for offenses to space out better and doesn't limit shot selection. Oddly enough, there is an increase in the number of midrange shots in the 2024 season versus the 2020 season. This could likely be due teams spending so much time working on defending the 3; thus, leaving uncontested 20 footers available. Another fun piece of information is Giannis incorporating the midrange shot. It is known across the league that he can't shoot, so teams defend him by waiting for him to drive to the lane. This leaves his midrange jumper open, which he used to be ineffiecient at. In an effort to counteract this, Giannis has trained incredibly hard to increas the percentage of midranges he shoots and the clip that he shoots them at in the last 2 seasons. This allows him to be a 2-way scorer instead of having a limited bag of tricks. Watching somebody make multiple jumpers in a row makes a player subconsciously feel the need to guard them tighter. This allows Giannis to utilize his speed and leverage to score at the rim.
+
+### Additional Statistics
+
+Deeper statistics / background information that outline some trends:
+
+- **Giannis Antetokounmpo**: Giannis Antetokounmpo, who was drafted in 2013, was an overlooked prospect. A disproportionately skinny power forward that lacked touch beyond the arc like NBA MVP Kevin Durant, seemingly had no business being anything beyond a role player in the NBA. Through the Bucks developmental and strength training programs, Giannis quickly became a force to be reckoned with as his unique combination of length and power left defenders helpless. Once Giannis started to shine in 2016, he has not slowed down since. For example, in the 2020 season, he shot over 77% at the rim, which explains the density of made baskets around the hoop on the 2020 and 2024 graphs.  
+
+- **Damian Lillard**: In late September, Damian Lillard, one of the most prolific 3-point shooters in this generation was acquired by the Bucks in a trade. With unparalleled confidence and range, Lillard has provided a much deeper shot chart than years prior. A career 37.1% 3-point shooter, he has provided a new aspect to the Milwaukee Bucks offense that was traditionally centered around Giannis. This allows for more offensive spacing and requires much more defensive cohesiveness from the opponent, as they have to guard an All-NBA PF and PG that have drastically different play styles.
+
+- **Khris Middleton**: Khris Middleton, who was acquired in 2013 from the Detroit Pistons, provided a unique dynamic to the Milwaukee Bucks offense that was currently lacking. Neither a sharpshooter like Kyle Korver, or an at ease slasher like Michael Jordan, Middleton was especially effective at the midrange. Sadly, through analytics and modern basketball trends, the mid-range shot was getting shot less and less across the NBA, unless you were hyper efficient. Khris was indeed that, during the 2019/2020 season, over 52% of his shots were from the midrange, making them at roughly a 52.3% rate. A more advanced metric, points per possession, showed that Khris was at par with the league average points per posession when a 3-point shot was taken. This efficiency stands out in the modern nba, and explains why the seldom mid range shots that were taken in 2020, were compromised of makes rather than misses.
+
+\newpage 
+ 
+```{r, warning=FALSE, message=FALSE, fig.width=4.5, fig.height=4.5}
+
+Giannis <- BucksShots2024 %>% filter(namePlayer == "Giannis Antetokounmpo")
+Lillard <- BucksShots2024 %>% filter(namePlayer == "Damian Lillard")
+
+#Damian Lillard
+plot20q1 <- court_plot + 
+  geom_point(data = Lillard, 
+             aes(x = locationX,
+                 y = locationY),
+             color = Bucks_Colors[3],
+             size = 1.2,
+             alpha = .45) +  #changed the opacity a little too bc of a different background
+  labs( #Changed title to fit grpah
+    title = "Damian Lillard Shot Chart \n 2024") + 
+  theme_bw() + #changed theme bc color looks better on bw
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(),  
+    axis.text.y = element_blank()) +  
+  coord_fixed() + 
+  ylim(-6,35)  +
+  ylab("") + 
+  xlab("") +
+  xlim(-27,27)
+
+#Got rid of a couple things here and there because they were not needed such as scale_color_x, legend titles + locations, shape = x, etc.
+plot20q1
+
+#Giannis Antetokounmpo
+plot20q4 <- court_plot + 
+  geom_point(data = Giannis, 
+             aes(x = locationX,
+                 y = locationY),
+             color = Bucks_Colors[3],
+             size = 1.2, 
+             alpha = .45) +  
+  labs(title = "Giannis Antetokounmpo Shot Chart \n 2024") + 
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(),  
+    axis.text.y = element_blank()) +
+  coord_fixed() + 
+  ylim(-6,35)  +
+  ylab("") + 
+  xlab("") +
+  xlim(-27,27)
+
+plot20q4
+
+```
+  
+  
+# Key Takeaways
+
+- Lillard and Giannis have very different shot profiles, yet both of them take a large number of shots at the rim. Both of them are efficient scorers at the rim even though the way they get these shots up are entirely different.
+- Giannis favors shooting midranges on the left side of the basket, or his right in game. This is likely due to him being right handed and he feels much more confident driving/pulling up with his dominant hand.
+- Giannis seemingly has no interest in corner threes, even though they are deemed the easiest shot beyond the arc. This is likely due to his court positioning on the court.
+- Lillard has a preference to shoot on the wings of the key. He also likes shooting straight on from the top of the key, but sees virtually no shots if you take 2-3 steps either direction from the direct middle.
+  
+
+
